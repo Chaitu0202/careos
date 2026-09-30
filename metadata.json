@@ -1,0 +1,6 @@
+{
+  "name": "CareOS — Hospital Intelligence",
+  "description": "The Intelligent Operating Layer for Hospitals — Multi-Agent Orchestration & Command Center for CareOne Multispecialty Hospital.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
