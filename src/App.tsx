@@ -14,10 +14,11 @@ import { IntegrationsView } from './pages/IntegrationsView';
 import { AuditView } from './pages/AuditView';
 import { AgentDetailDrawer } from './components/drawers/AgentDetailDrawer';
 import { VoiceModal } from './components/command/VoiceModal';
+import { LoginModal } from './components/auth/LoginModal';
 import { Menu } from 'lucide-react';
 
 const AppLayout: React.FC = () => {
-  const { activePage } = useHospital();
+  const { activePage, isLoginModalOpen, setIsLoginModalOpen } = useHospital();
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
 
@@ -85,6 +86,12 @@ const AppLayout: React.FC = () => {
       <VoiceModal
         isOpen={isVoiceModalOpen}
         onClose={() => setIsVoiceModalOpen(false)}
+      />
+
+      {/* Role-Based Authentication Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
       />
     </div>
   );

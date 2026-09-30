@@ -18,7 +18,14 @@ import {
 } from 'lucide-react';
 
 export const ExecutionPipeline: React.FC = () => {
-  const { currentInvestigation, isInvestigating, approveRecommendation, setSelectedAgentId } = useHospital();
+  const {
+    currentInvestigation,
+    isInvestigating,
+    approveRecommendation,
+    setSelectedAgentId,
+    currentUser,
+    setIsLoginModalOpen,
+  } = useHospital();
   const [showEvidence, setShowEvidence] = useState(false);
   const [isApproving, setIsApproving] = useState(false);
 
@@ -328,16 +335,38 @@ export const ExecutionPipeline: React.FC = () => {
                 </div>
               </div>
 
-              {analysisResult.actionableRecommendation && (
-                <button
-                  onClick={handleApproveAction}
-                  disabled={isApproving}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-bold shadow-sm transition-colors shrink-0"
-                >
-                  <FileCheck2 className="w-4 h-4" />
-                  <span>{isApproving ? 'Executing...' : 'Approve Recommended Action'}</span>
-                </button>
-              )}
+              {analysisResult.actionableRecommendation && (() => {
+                const isAuthorized = currentUser && (
+                  currentUser.role === 'admin' ||
+                  currentUser.role === 'operations' ||
+                  (currentUser.role === 'billing' && analysisResult.actionableRecommendation.actionPayload.type === 'ESCALATE_INSURANCE') ||
+                  (currentUser.role === 'doctor' && analysisResult.actionableRecommendation.actionPayload.type === 'REASSIGN_MRI_SLOT')
+                );
+
+                if (isAuthorized) {
+                  return (
+                    <button
+                      onClick={handleApproveAction}
+                      disabled={isApproving}
+                      className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-bold shadow-sm transition-colors shrink-0"
+                    >
+                      <FileCheck2 className="w-4 h-4" />
+                      <span>{isApproving ? 'Executing...' : `Approve Action as ${currentUser.name.split(' ')[0]} (${currentUser.role.toUpperCase()})`}</span>
+                    </button>
+                  );
+                }
+
+                return (
+                  <button
+                    onClick={() => setIsLoginModalOpen(true)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#D97706] hover:bg-[#B45309] text-white text-xs font-bold shadow-sm transition-colors shrink-0"
+                    title="Click to authenticate as Hospital Administrator or Chief Operating Officer"
+                  >
+                    <ShieldAlert className="w-4 h-4" />
+                    <span>Switch to Authorized Role (Admin/COO) to Approve</span>
+                  </button>
+                );
+              })()}
             </div>
 
             {/* Evidence Disclosure Accordion */}

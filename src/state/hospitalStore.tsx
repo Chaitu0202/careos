@@ -20,7 +20,10 @@ import {
   HospitalEvent,
   InvestigationExecution,
   AgentId,
+  UserProfile,
+  UserRole,
 } from '../types/hospital';
+import { PRESET_USERS } from '../data/userRoles';
 import {
   INITIAL_PATIENTS,
   INITIAL_DOCTORS,
@@ -76,6 +79,14 @@ interface HospitalContextType {
   recommendations: Recommendation[];
   events: HospitalEvent[];
 
+  // Role-Based Access Control
+  currentUser: UserProfile | null;
+  setCurrentUser: (user: UserProfile | null) => void;
+  logoutUser: () => void;
+  isLoginModalOpen: boolean;
+  setIsLoginModalOpen: (open: boolean) => void;
+  hasPermission: (permission: string) => boolean;
+
   // Navigation & Drawers
   activePage: ActivePage;
   setActivePage: (page: ActivePage) => void;
@@ -129,6 +140,23 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>(INITIAL_AUDIT_LOGS);
   const [recommendations, setRecommendations] = useState<Recommendation[]>(INITIAL_RECOMMENDATIONS);
   const [events, setEvents] = useState<HospitalEvent[]>([]);
+
+  // Role-Based Authentication
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(PRESET_USERS[0]);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+
+  const logoutUser = useCallback(() => {
+    setCurrentUser(null);
+  }, []);
+
+  const hasPermission = useCallback(
+    (permission: string): boolean => {
+      if (!currentUser) return false;
+      if (currentUser.permissions.includes('all_access')) return true;
+      return currentUser.permissions.includes(permission);
+    },
+    [currentUser]
+  );
 
   // Navigation
   const [activePage, setActivePage] = useState<ActivePage>('command_center');
@@ -450,6 +478,12 @@ export const HospitalProvider: React.FC<{ children: ReactNode }> = ({ children }
         auditLogs,
         recommendations,
         events,
+        currentUser,
+        setCurrentUser,
+        logoutUser,
+        isLoginModalOpen,
+        setIsLoginModalOpen,
+        hasPermission,
         activePage,
         setActivePage,
         selectedAgentId,

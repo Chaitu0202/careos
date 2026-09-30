@@ -1,35 +1,23 @@
-// CareOS Hospital Operating System — Sidebar Navigation
+// CareOS Hospital Operating System — Streamlined Sidebar Navigation
 import React from 'react';
 import { useHospital, ActivePage } from '../../state/hospitalStore';
+import { ROLE_DEFINITIONS } from '../../data/userRoles';
 import {
   LayoutDashboard,
   Network,
-  Terminal,
-  Activity,
   Users,
-  GitBranch,
-  Calendar,
-  Clock,
-  UserCheck,
-  UserMinus,
   Building2,
-  Stethoscope,
-  HeartHandshake,
-  FlaskConical,
-  Scan,
-  Pill,
-  Receipt,
-  ShieldCheck,
   BedDouble,
-  Boxes,
-  Truck,
   TrendingDown,
   BarChart3,
-  Lightbulb,
   Workflow,
-  Lock,
   FileText,
+  UserCheck,
+  ShieldCheck,
   ChevronRight,
+  Activity,
+  Layers,
+  Sparkles,
 } from 'lucide-react';
 
 interface SidebarProps {
@@ -38,15 +26,24 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile }) => {
-  const { activePage, setActivePage, bottlenecks, alerts } = useHospital();
+  const {
+    activePage,
+    setActivePage,
+    bottlenecks,
+    alerts,
+    currentUser,
+    setIsLoginModalOpen,
+  } = useHospital();
 
   const activeBottlenecksCount = bottlenecks.filter((b) => b.status === 'Active').length;
   const activeAlertsCount = alerts.filter((a) => !a.resolved).length;
 
+  const roleMeta = currentUser ? ROLE_DEFINITIONS[currentUser.role] : null;
+
   const navItemClass = (page: ActivePage) =>
-    `flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium transition-colors ${
+    `flex items-center justify-between w-full px-3 py-2 rounded-lg text-xs font-semibold transition-all ${
       activePage === page
-        ? 'bg-[#EAF2FF] text-[#2563EB] font-semibold'
+        ? 'bg-[#2563EB] text-white shadow-xs'
         : 'text-[#172B4D] hover:bg-[#F6F9FC] hover:text-[#2563EB]'
     }`;
 
@@ -86,298 +83,172 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpenMobile, onCloseMobile })
             </div>
           </div>
           <span className="text-[10px] font-semibold text-[#0F9F9A] bg-[#E8F8F6] px-1.5 py-0.5 rounded border border-[#0F9F9A]/20">
-            v3.8
+            CareOne
           </span>
         </div>
 
-        {/* Scrollable Navigation Tree */}
-        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4 text-xs">
-          {/* Group 1: COMMAND */}
-          <div>
-            <div className="px-2 mb-1 text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
-              COMMAND
+        {/* Active Role Persona Card (Click to Switch) */}
+        <div className="p-3 border-b border-[#E2E8F0] bg-[#F6F9FC]/60">
+          <div
+            onClick={() => setIsLoginModalOpen(true)}
+            className="p-2.5 rounded-xl border border-[#E2E8F0] bg-white hover:border-[#2563EB]/40 cursor-pointer transition-all shadow-2xs hover:shadow-xs group"
+          >
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
+                Active Staff Persona
+              </span>
+              <span className="text-[10px] text-[#2563EB] font-semibold group-hover:underline">
+                Switch →
+              </span>
             </div>
-            <div className="space-y-0.5">
+
+            {currentUser ? (
+              <div className="flex items-center gap-2.5">
+                <div className="w-7 h-7 rounded-full bg-[#2563EB] text-white font-bold text-xs flex items-center justify-center shrink-0">
+                  {currentUser.initials}
+                </div>
+                <div className="truncate">
+                  <div className="text-xs font-bold text-[#172B4D] truncate group-hover:text-[#2563EB]">
+                    {currentUser.name}
+                  </div>
+                  <div className="text-[10px] font-medium text-[#64748B] truncate">
+                    {roleMeta?.label}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-xs font-medium text-[#DC2626]">
+                Not Authenticated (Click to Sign In)
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Streamlined Navigation */}
+        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-4 text-xs">
+          {/* Section 1: COMMAND & INTELLIGENCE */}
+          <div>
+            <div className="px-2 mb-1.5 text-[10px] font-bold text-[#64748B] uppercase tracking-wider">
+              COMMAND & AGENTS
+            </div>
+            <div className="space-y-1">
               <button onClick={() => handleNav('command_center')} className={navItemClass('command_center')}>
-                <div className="flex items-center gap-2">
-                  <LayoutDashboard className="w-3.5 h-3.5 text-[#2563EB]" />
-                  <span>Command Center</span>
+                <div className="flex items-center gap-2.5">
+                  <LayoutDashboard className="w-4 h-4" />
+                  <span>Hospital Command Center</span>
                 </div>
               </button>
 
               <button onClick={() => handleNav('agent_network')} className={navItemClass('agent_network')}>
-                <div className="flex items-center gap-2">
-                  <Network className="w-3.5 h-3.5 text-[#3B82F6]" />
+                <div className="flex items-center gap-2.5">
+                  <Network className="w-4 h-4" />
                   <span>Live Agent Network</span>
                 </div>
                 <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
               </button>
 
-              <button
-                onClick={() => {
-                  handleNav('command_center');
-                  const terminal = document.getElementById('careos-command-terminal');
-                  if (terminal) terminal.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className={navItemClass('command_center')}
-              >
-                <div className="flex items-center gap-2">
-                  <Terminal className="w-3.5 h-3.5 text-[#64748B]" />
-                  <span>AI Terminal</span>
-                </div>
-              </button>
-
-              <button onClick={() => handleNav('audit')} className={navItemClass('audit')}>
-                <div className="flex items-center gap-2">
-                  <Activity className="w-3.5 h-3.5 text-[#64748B]" />
-                  <span>Event Stream</span>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Group 2: PATIENT OPERATIONS */}
-          <div>
-            <div className="px-2 mb-1 text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
-              PATIENT OPERATIONS
-            </div>
-            <div className="space-y-0.5">
-              <button onClick={() => handleNav('patients')} className={navItemClass('patients')}>
-                <div className="flex items-center gap-2">
-                  <Users className="w-3.5 h-3.5 text-[#2563EB]" />
-                  <span>Patients</span>
-                </div>
-                <span className="text-[10px] text-[#64748B] font-mono">248</span>
-              </button>
-
-              <button onClick={() => handleNav('patients')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <GitBranch className="w-3.5 h-3.5 text-[#0F9F9A]" />
-                  <span>Patient Journeys</span>
-                </div>
-              </button>
-
-              <button onClick={() => handleNav('patients')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <Calendar className="w-3.5 h-3.5 text-[#64748B]" />
-                  <span>Appointments</span>
-                </div>
-                <span className="text-[10px] text-[#64748B] font-mono">126</span>
-              </button>
-
-              <button onClick={() => handleNav('patients')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <Clock className="w-3.5 h-3.5 text-[#D97706]" />
-                  <span>Queue & Waiting</span>
-                </div>
-                <span className="text-[10px] text-[#D97706] font-bold">42</span>
-              </button>
-
-              <button onClick={() => handleNav('patients')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <UserCheck className="w-3.5 h-3.5 text-[#16A34A]" />
-                  <span>Admissions</span>
-                </div>
-              </button>
-
-              <button onClick={() => handleNav('patients')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <UserMinus className="w-3.5 h-3.5 text-[#DC2626]" />
-                  <span>Discharges</span>
-                </div>
-                <span className="px-1.5 py-0.2 bg-[#FEECEC] text-[#DC2626] font-bold rounded text-[10px]">
-                  1 Delayed
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* Group 3: DEPARTMENTS */}
-          <div>
-            <div className="px-2 mb-1 text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
-              DEPARTMENTS
-            </div>
-            <div className="space-y-0.5">
-              <button onClick={() => handleNav('departments')} className={navItemClass('departments')}>
-                <div className="flex items-center gap-2">
-                  <Building2 className="w-3.5 h-3.5 text-[#2563EB]" />
-                  <span>15 Departments</span>
-                </div>
-                <span className="text-[10px] text-[#64748B]">Overview</span>
-              </button>
-
-              <button onClick={() => handleNav('departments')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <Scan className="w-3.5 h-3.5 text-[#DC2626]" />
-                  <span>Radiology</span>
-                </div>
-                <span className="px-1.5 py-0.2 bg-[#FEECEC] text-[#DC2626] rounded text-[10px] font-bold">
-                  8 Waiting
-                </span>
-              </button>
-
-              <button onClick={() => handleNav('departments')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <Stethoscope className="w-3.5 h-3.5 text-[#64748B]" />
-                  <span>Doctors (25+)</span>
-                </div>
-              </button>
-
-              <button onClick={() => handleNav('departments')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <HeartHandshake className="w-3.5 h-3.5 text-[#64748B]" />
-                  <span>Nursing & Wards</span>
-                </div>
-              </button>
-
-              <button onClick={() => handleNav('departments')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <FlaskConical className="w-3.5 h-3.5 text-[#64748B]" />
-                  <span>Laboratory</span>
-                </div>
-              </button>
-
-              <button onClick={() => handleNav('departments')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <Pill className="w-3.5 h-3.5 text-[#64748B]" />
-                  <span>Pharmacy</span>
-                </div>
-              </button>
-
-              <button onClick={() => handleNav('departments')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <Receipt className="w-3.5 h-3.5 text-[#D97706]" />
-                  <span>Billing & Accounts</span>
-                </div>
-              </button>
-
-              <button onClick={() => handleNav('departments')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#64748B]" />
-                  <span>Insurance & TPA</span>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Group 4: RESOURCES */}
-          <div>
-            <div className="px-2 mb-1 text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
-              RESOURCES
-            </div>
-            <div className="space-y-0.5">
-              <button onClick={() => handleNav('resources')} className={navItemClass('resources')}>
-                <div className="flex items-center gap-2">
-                  <BedDouble className="w-3.5 h-3.5 text-[#0F9F9A]" />
-                  <span>Beds & Rooms (300)</span>
-                </div>
-                <span className="text-[10px] font-mono text-[#0F9F9A]">34 Avail</span>
-              </button>
-
-              <button onClick={() => handleNav('resources')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <Boxes className="w-3.5 h-3.5 text-[#64748B]" />
-                  <span>Equipment (MRI/CT/OR)</span>
-                </div>
-              </button>
-
-              <button onClick={() => handleNav('resources')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <Truck className="w-3.5 h-3.5 text-[#64748B]" />
-                  <span>Transport & Stretchers</span>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          {/* Group 5: INTELLIGENCE */}
-          <div>
-            <div className="px-2 mb-1 text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
-              INTELLIGENCE
-            </div>
-            <div className="space-y-0.5">
               <button onClick={() => handleNav('bottlenecks')} className={navItemClass('bottlenecks')}>
-                <div className="flex items-center gap-2">
-                  <TrendingDown className="w-3.5 h-3.5 text-[#DC2626]" />
-                  <span>Bottlenecks</span>
+                <div className="flex items-center gap-2.5">
+                  <TrendingDown className="w-4 h-4" />
+                  <span>Bottlenecks & Delays</span>
                 </div>
                 {activeBottlenecksCount > 0 && (
-                  <span className="px-1.5 py-0.2 bg-[#FEECEC] text-[#DC2626] font-bold rounded text-[10px]">
+                  <span
+                    className={`px-1.5 py-0.2 rounded text-[10px] font-bold ${
+                      activePage === 'bottlenecks'
+                        ? 'bg-white/20 text-white'
+                        : 'bg-[#FEECEC] text-[#DC2626]'
+                    }`}
+                  >
                     {activeBottlenecksCount}
                   </span>
                 )}
               </button>
 
               <button onClick={() => handleNav('analytics')} className={navItemClass('analytics')}>
-                <div className="flex items-center gap-2">
-                  <BarChart3 className="w-3.5 h-3.5 text-[#2563EB]" />
-                  <span>Analytics</span>
+                <div className="flex items-center gap-2.5">
+                  <BarChart3 className="w-4 h-4" />
+                  <span>Operations Analytics</span>
                 </div>
-              </button>
-
-              <button onClick={() => handleNav('alerts')} className={navItemClass('alerts')}>
-                <div className="flex items-center gap-2">
-                  <Lightbulb className="w-3.5 h-3.5 text-[#D97706]" />
-                  <span>Alerts & Actions</span>
-                </div>
-                {activeAlertsCount > 0 && (
-                  <span className="px-1.5 py-0.2 bg-[#FFF6E5] text-[#D97706] font-bold rounded text-[10px]">
-                    {activeAlertsCount}
-                  </span>
-                )}
               </button>
             </div>
           </div>
 
-          {/* Group 6: SYSTEMS */}
+          {/* Section 2: CLINICAL & PATIENT OPERATIONS */}
           <div>
-            <div className="px-2 mb-1 text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
-              SYSTEMS
+            <div className="px-2 mb-1.5 text-[10px] font-bold text-[#64748B] uppercase tracking-wider">
+              OPERATIONS
             </div>
-            <div className="space-y-0.5">
+            <div className="space-y-1">
+              <button onClick={() => handleNav('patients')} className={navItemClass('patients')}>
+                <div className="flex items-center gap-2.5">
+                  <Users className="w-4 h-4" />
+                  <span>Patients & Journeys</span>
+                </div>
+                <span
+                  className={`text-[10px] font-mono ${
+                    activePage === 'patients' ? 'text-white' : 'text-[#64748B]'
+                  }`}
+                >
+                  248
+                </span>
+              </button>
+
+              <button onClick={() => handleNav('departments')} className={navItemClass('departments')}>
+                <div className="flex items-center gap-2.5">
+                  <Building2 className="w-4 h-4" />
+                  <span>Departments (15 Wings)</span>
+                </div>
+              </button>
+
+              <button onClick={() => handleNav('resources')} className={navItemClass('resources')}>
+                <div className="flex items-center gap-2.5">
+                  <BedDouble className="w-4 h-4" />
+                  <span>Beds & Capital Assets</span>
+                </div>
+                <span
+                  className={`text-[10px] font-mono ${
+                    activePage === 'resources' ? 'text-white' : 'text-[#0F9F9A]'
+                  }`}
+                >
+                  34 Avail
+                </span>
+              </button>
+            </div>
+          </div>
+
+          {/* Section 3: ENTERPRISE & GOVERNANCE */}
+          <div>
+            <div className="px-2 mb-1.5 text-[10px] font-bold text-[#64748B] uppercase tracking-wider">
+              SYSTEMS & AUDIT
+            </div>
+            <div className="space-y-1">
               <button onClick={() => handleNav('integrations')} className={navItemClass('integrations')}>
-                <div className="flex items-center gap-2">
-                  <Workflow className="w-3.5 h-3.5 text-[#2563EB]" />
+                <div className="flex items-center gap-2.5">
+                  <Workflow className="w-4 h-4" />
                   <span>Suvarna ERP & n8n</span>
                 </div>
-                <span className="w-2 h-2 rounded-full bg-[#16A34A]" />
+                <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]" />
               </button>
-            </div>
-          </div>
 
-          {/* Group 7: SECURITY */}
-          <div>
-            <div className="px-2 mb-1 text-[10px] font-semibold text-[#64748B] uppercase tracking-wider">
-              SECURITY
-            </div>
-            <div className="space-y-0.5">
               <button onClick={() => handleNav('audit')} className={navItemClass('audit')}>
-                <div className="flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5 text-[#64748B]" />
-                  <span>Audit Logs</span>
-                </div>
-              </button>
-
-              <button onClick={() => handleNav('integrations')} className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-md text-xs font-medium text-[#172B4D] hover:bg-[#F6F9FC]">
-                <div className="flex items-center gap-2 pl-2">
-                  <Lock className="w-3.5 h-3.5 text-[#64748B]" />
-                  <span>Agent Permissions</span>
+                <div className="flex items-center gap-2.5">
+                  <FileText className="w-4 h-4" />
+                  <span>Audit Logs & Ledger</span>
                 </div>
               </button>
             </div>
           </div>
         </div>
 
-        {/* Footer info */}
+        {/* Footer */}
         <div className="p-3 border-t border-[#E2E8F0] bg-[#F6F9FC]">
-          <div className="text-[11px] font-semibold text-[#172B4D]">CareOne Multispecialty</div>
-          <div className="text-[10px] text-[#64748B]">Visakhapatnam, Andhra Pradesh</div>
-          <div className="mt-1 flex items-center justify-between text-[10px] text-[#0F9F9A]">
-            <span className="inline-flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A]"></span>
-              Operating Layer Active
-            </span>
-            <span className="font-mono text-[#64748B]">Port 3000</span>
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="font-semibold text-[#172B4D]">CareOne Multispecialty</span>
+            <span className="font-mono text-[#0F9F9A] font-bold">300 Beds</span>
+          </div>
+          <div className="text-[10px] text-[#64748B] mt-0.5">
+            Visakhapatnam, Andhra Pradesh
           </div>
         </div>
       </aside>

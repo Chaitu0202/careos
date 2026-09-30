@@ -1,5 +1,19 @@
 // CareOS Hospital Operating System — Type Definitions
 
+export type UserRole = 'admin' | 'operations' | 'doctor' | 'nurse' | 'billing';
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  title: string;
+  department: string;
+  avatar: string;
+  initials: string;
+  permissions: string[];
+}
+
 export type AgentId =
   | 'orchestrator'
   | 'journey_agent'

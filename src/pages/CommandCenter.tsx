@@ -1,6 +1,7 @@
 // CareOS Hospital Operating System — Hospital Command Center (Main Screen)
 import React from 'react';
 import { useHospital } from '../state/hospitalStore';
+import { ROLE_DEFINITIONS } from '../data/userRoles';
 import { KpiRow } from '../components/dashboard/KpiRow';
 import { AlertsBanner } from '../components/dashboard/AlertsBanner';
 import { HospitalTwinMatrix } from '../components/dashboard/HospitalTwinMatrix';
@@ -13,8 +14,9 @@ import {
   ArrowRight,
   ShieldCheck,
   CheckCircle2,
-  Clock,
-  UserCheck,
+  Lock,
+  User,
+  Activity,
 } from 'lucide-react';
 
 interface CommandCenterProps {
@@ -22,20 +24,64 @@ interface CommandCenterProps {
 }
 
 export const CommandCenter: React.FC<CommandCenterProps> = ({ onOpenVoice }) => {
-  const { bottlenecks, executeCommand, setActivePage, approveRecommendation } = useHospital();
+  const {
+    bottlenecks,
+    executeCommand,
+    setActivePage,
+    currentUser,
+    setIsLoginModalOpen,
+  } = useHospital();
 
   const activeBottlenecks = bottlenecks.filter((b) => b.status === 'Active');
+  const roleMeta = currentUser ? ROLE_DEFINITIONS[currentUser.role] : null;
 
   return (
     <div className="space-y-4">
+      {/* Role & Access Status Bar */}
+      <div className="bg-white rounded-xl border border-[#E2E8F0] px-4 py-2.5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-[#2563EB]/10 text-[#2563EB] flex items-center justify-center font-bold text-xs shrink-0">
+            <ShieldCheck className="w-4 h-4" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-[#172B4D]">
+                Active Persona: {currentUser?.name || 'Guest Observer'}
+              </span>
+              {roleMeta && (
+                <span
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${roleMeta.bg} ${roleMeta.color} ${roleMeta.border}`}
+                >
+                  {roleMeta.label}
+                </span>
+              )}
+            </div>
+            <p className="text-[11px] text-[#64748B]">
+              {roleMeta?.description || 'Sign in to access clinical and administrative authorization powers.'}
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={() => setIsLoginModalOpen(true)}
+          className="px-3 py-1 rounded-lg bg-[#F6F9FC] hover:bg-[#EAF2FF] text-[#2563EB] border border-[#E2E8F0] text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs"
+        >
+          <User className="w-3.5 h-3.5" />
+          <span>Switch Persona / Log In</span>
+        </button>
+      </div>
+
+      {/* Prominent Command Terminal at the top for immediate access */}
+      <CommandTerminal onOpenVoice={onOpenVoice} />
+
+      {/* Observable Multi-Agent Pipeline & Investigation Result */}
+      <ExecutionPipeline />
+
       {/* 8-Compact KPI Row */}
       <KpiRow />
 
       {/* Proactive Alerts Banner */}
       <AlertsBanner />
-
-      {/* Observable Pipeline & Investigation Result */}
-      <ExecutionPipeline />
 
       {/* Main 2-Column Command Center Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
@@ -119,11 +165,6 @@ export const CommandCenter: React.FC<CommandCenterProps> = ({ onOpenVoice }) => 
         <div className="lg:col-span-4">
           <AgentActivityFeed />
         </div>
-      </div>
-
-      {/* Prominent Command Terminal at the bottom */}
-      <div className="mt-4">
-        <CommandTerminal onOpenVoice={onOpenVoice} />
       </div>
     </div>
   );
