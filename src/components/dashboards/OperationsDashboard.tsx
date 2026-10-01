@@ -1,146 +1,136 @@
-// CareOS Hospital Operating System — Chief Operating Officer (COO) Dashboard
-import React from 'react';
+// CareOS Hospital Operating System — Chief Operating Officer (COO) Dashboard (Calm UX)
+import React, { useState } from 'react';
 import { useHospital } from '../../state/hospitalStore';
 import { HospitalTwinMatrix } from '../dashboard/HospitalTwinMatrix';
 import {
   Building2,
   TrendingDown,
+  Layers,
   BedDouble,
   Scan,
   Clock,
-  CheckCircle2,
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  AlertTriangle,
 } from 'lucide-react';
 
 export const OperationsDashboard: React.FC = () => {
-  const { bottlenecks, executeCommand, setActivePage, approveRecommendation, recommendations } = useHospital();
+  const { bottlenecks, executeCommand, setActivePage } = useHospital();
+  const [activeTab, setActiveTab] = useState<'constraints' | 'wings'>('constraints');
 
   const activeBottlenecks = bottlenecks.filter((b) => b.status === 'Active');
 
   return (
-    <div className="space-y-4">
-      {/* COO Header */}
-      <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-5 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-teal-100 text-[#0F9F9A] flex items-center justify-center font-bold text-lg border border-teal-200 shadow-xs">
-            <Building2 className="w-6 h-6" />
-          </div>
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Calm Operations Executive Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-900 tracking-tight">
+            Hospital Operations & Flow Velocity
+          </h2>
+          <p className="text-xs text-slate-500 mt-1">
+            Vikramaditya Rao, MBA · Chief Operating Officer (COO) · Enterprise Flow
+          </p>
+        </div>
+
+        {/* Operations Pulse */}
+        <div className="flex items-center gap-6 text-xs">
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-[#172B4D]">
-                Vikramaditya Rao, MBA (Hospital Administration)
-              </h2>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#E8F8F6] text-[#0F9F9A] border border-[#0F9F9A]/20 uppercase">
-                Chief Operating Officer (COO)
-              </span>
-            </div>
-            <p className="text-xs text-[#64748B] mt-0.5">
-              Enterprise Operations & Flow Optimization • CareOne Multispecialty
-            </p>
+            <span className="text-slate-400 block text-[11px]">Flow Velocity</span>
+            <span className="font-semibold text-slate-800">18.4 patients/hr</span>
           </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => executeCommand("Find today's bottlenecks")}
-            className="px-3.5 py-1.5 rounded-lg bg-[#2563EB] text-white text-xs font-semibold hover:bg-[#1D4ED8] transition-colors flex items-center gap-1.5 shadow-xs"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Discover Active Bottlenecks</span>
-          </button>
+          <div className="h-7 w-px bg-slate-200" />
+          <div>
+            <span className="text-slate-400 block text-[11px]">Bed Occupancy</span>
+            <span className="font-semibold text-emerald-700">82.6% · 34 Ready</span>
+          </div>
+          <div className="h-7 w-px bg-slate-200" />
+          <div>
+            <span className="text-slate-400 block text-[11px]">Constraints</span>
+            <span className="font-semibold text-amber-700">{activeBottlenecks.length} Active</span>
+          </div>
         </div>
       </div>
 
-      {/* Operational Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
-          <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
-            Throughput Velocity
-          </div>
-          <div className="text-xl font-bold text-[#172B4D]">18.4 pts/hr</div>
-          <p className="text-[11px] text-[#16A34A] mt-1">↑ 4.2% on-time flow</p>
-        </div>
+      {/* Menu Bar: Progressive Disclosure Tabs */}
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-px">
+        <button
+          onClick={() => setActiveTab('constraints')}
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
+            activeTab === 'constraints'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <TrendingDown className="w-4 h-4" />
+          <span>Active Flow Constraints ({activeBottlenecks.length})</span>
+        </button>
 
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
-          <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
-            Bed Occupancy
-          </div>
-          <div className="text-xl font-bold text-[#0F9F9A]">88.6%</div>
-          <p className="text-[11px] text-[#0F9F9A] mt-1">34 beds ready</p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
-          <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
-            Active Bottlenecks
-          </div>
-          <div className="text-xl font-bold text-[#DC2626]">{activeBottlenecks.length} Critical</div>
-          <p className="text-[11px] text-[#DC2626] mt-1">Radiology & P1001</p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
-          <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
-            Asset Telemetry
-          </div>
-          <div className="text-xl font-bold text-[#D97706]">1 Offline</div>
-          <p className="text-[11px] text-[#D97706] mt-1">Achieva MRI03 servicing</p>
-        </div>
+        <button
+          onClick={() => setActiveTab('wings')}
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
+            activeTab === 'wings'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          <span>Hospital Capacity & Wings</span>
+        </button>
       </div>
 
-      {/* Operational Twin Matrix */}
-      <HospitalTwinMatrix />
+      {/* Tab 1: Constraints & Solutions */}
+      {activeTab === 'constraints' && (
+        <div className="space-y-4 animate-in fade-in duration-150">
+          <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-4">
+            <h3 className="text-xs font-semibold text-slate-900 tracking-wide">
+              Priority Constraints Requiring Mitigation
+            </h3>
 
-      {/* Bottlenecks Deep Dive Spotlight */}
-      <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-5 space-y-3">
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-bold text-[#172B4D] uppercase tracking-wider">
-            Operational Constraints Under Review ({activeBottlenecks.length})
-          </h3>
+            <div className="space-y-3 text-xs">
+              {activeBottlenecks.map((btn) => (
+                <div
+                  key={btn.id}
+                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 hover:bg-slate-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                >
+                  <div className="max-w-2xl">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-semibold text-slate-900 text-sm">{btn.title}</span>
+                      <span className="text-slate-400">·</span>
+                      <span className="text-slate-500">{btn.department}</span>
+                      <span className="text-slate-400">·</span>
+                      <span className="text-rose-700 font-medium">Affecting {btn.affectedPatientsCount} Patients</span>
+                    </div>
+                    <p className="text-slate-600 leading-relaxed">
+                      {btn.rootCause}
+                    </p>
+                  </div>
 
-          <button
-            onClick={() => setActivePage('bottlenecks')}
-            className="text-xs text-[#2563EB] hover:underline font-semibold"
-          >
-            Manage All Constraints →
-          </button>
-        </div>
-
-        <div className="space-y-3 text-xs">
-          {activeBottlenecks.map((btn) => (
-            <div
-              key={btn.id}
-              className="p-3.5 rounded-xl border border-[#E2E8F0] bg-[#F6F9FC] flex flex-wrap items-center justify-between gap-3"
-            >
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-bold text-[#172B4D]">{btn.title}</span>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#FEECEC] text-[#DC2626] uppercase">
-                    {btn.severity}
-                  </span>
+                  <button
+                    onClick={() => {
+                      if (btn.id === 'BTN-01') {
+                        executeCommand('How many patients are waiting in radiology and why?');
+                      } else {
+                        executeCommand('Why is P1001 delayed?');
+                      }
+                    }}
+                    className="px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium text-xs shadow-xs transition-colors shrink-0"
+                  >
+                    Orchestrate Mitigation →
+                  </button>
                 </div>
-                <p className="text-[11px] text-[#64748B] leading-relaxed max-w-2xl">
-                  {btn.rootCause}
-                </p>
-              </div>
-
-              <button
-                onClick={() => {
-                  if (btn.id === 'BTN-01') {
-                    executeCommand('How many patients are waiting in radiology and why?');
-                  } else {
-                    executeCommand('Why is P1001 delayed?');
-                  }
-                }}
-                className="px-3 py-1.5 rounded-lg bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-semibold shadow-xs"
-              >
-                Orchestrate Solution →
-              </button>
+              ))}
             </div>
-          ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Tab 2: Wings & Capacity */}
+      {activeTab === 'wings' && (
+        <div className="space-y-4 animate-in fade-in duration-150">
+          <HospitalTwinMatrix />
+        </div>
+      )}
     </div>
   );
 };

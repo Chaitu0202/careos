@@ -1,4 +1,4 @@
-// CareOS Hospital Operating System — Nursing & Ward Station Dashboard
+// CareOS Hospital Operating System — Nursing & Ward Station Dashboard (Calm UX)
 import React, { useState } from 'react';
 import { useHospital } from '../../state/hospitalStore';
 import {
@@ -7,172 +7,214 @@ import {
   BedDouble,
   CheckCircle2,
   Clock,
-  AlertTriangle,
-  UserCheck,
-  Truck,
   Sparkles,
   PhoneCall,
   User,
+  AlertCircle,
 } from 'lucide-react';
 
 export const NurseDashboard: React.FC = () => {
   const { patients, resources, speakText, executeCommand } = useHospital();
-  const [cleaningRequested, setCleaningRequested] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'census' | 'vitals' | 'tasks'>('census');
+  const [dispatchedBeds, setDispatchedBeds] = useState<string[]>([]);
 
   const wardBeds = resources.filter((r) => r.type === 'Bed' || r.type === 'ICU Bed');
+  const occupiedCount = wardBeds.filter((b) => b.status === 'In Use').length;
+  const cleaningCount = wardBeds.filter((b) => b.status === 'Cleaning').length;
+  const readyCount = wardBeds.filter((b) => b.status === 'Available').length;
 
-  const handleRequestCleaning = (bedId: string) => {
-    setCleaningRequested(bedId);
-    speakText(`Housekeeping dispatched for disinfection on bed ${bedId}.`);
-    setTimeout(() => setCleaningRequested(null), 4000);
+  const handleHousekeepingCall = (bedId: string) => {
+    setDispatchedBeds([...dispatchedBeds, bedId]);
+    speakText(`Housekeeping requested for disinfection on bed ${bedId}.`);
   };
 
   return (
-    <div className="space-y-4">
-      {/* Nurse Header */}
-      <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-5 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-xl bg-emerald-100 text-[#16A34A] flex items-center justify-center font-bold text-lg border border-emerald-200 shadow-xs">
-            <HeartHandshake className="w-6 h-6" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-base font-bold text-[#172B4D]">
-                Sister Kavitha Rao, B.Sc Nursing
-              </h2>
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-[#16A34A] border border-emerald-200 uppercase">
-                Nursing Supervisor • Floor 1 West & CCU
-              </span>
-            </div>
-            <p className="text-xs text-[#64748B] mt-0.5">
-              Ward Floor 1 • Shift: Morning (07:00 - 15:30) • CareOne Multispecialty Hospital
-            </p>
-          </div>
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* Calm Nursing Station Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200">
+        <div>
+          <h2 className="text-xl font-semibold text-slate-900 tracking-tight">
+            Floor 1 Nursing Station & Ward Management
+          </h2>
+          <p className="text-xs text-slate-500 mt-1">
+            Sister Kavitha Rao, B.Sc Nursing · Nursing Supervisor · Floor 1 West & CCU
+          </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => executeCommand('Find available beds for a new ICU admission')}
-            className="px-3.5 py-1.5 rounded-lg bg-[#2563EB] text-white text-xs font-semibold hover:bg-[#1D4ED8] transition-colors flex items-center gap-1.5 shadow-xs"
-          >
-            <BedDouble className="w-3.5 h-3.5" />
-            <span>Check ICU Bed Census</span>
-          </button>
+        {/* Nursing Pulse */}
+        <div className="flex items-center gap-6 text-xs">
+          <div>
+            <span className="text-slate-400 block text-[11px]">Active Inpatients</span>
+            <span className="font-semibold text-slate-800">{occupiedCount} Beds Occupied</span>
+          </div>
+          <div className="h-7 w-px bg-slate-200" />
+          <div>
+            <span className="text-slate-400 block text-[11px]">Beds Ready</span>
+            <span className="font-semibold text-emerald-700">{readyCount} Available</span>
+          </div>
+          <div className="h-7 w-px bg-slate-200" />
+          <div>
+            <span className="text-slate-400 block text-[11px]">In Sanitization</span>
+            <span className="font-semibold text-amber-700">{cleaningCount} Beds</span>
+          </div>
         </div>
       </div>
 
-      {/* Nursing Status Metrics */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
-          <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
-            Ward Inpatients
-          </div>
-          <div className="text-xl font-bold text-[#172B4D]">18 Patients</div>
-          <p className="text-[11px] text-[#16A34A] mt-1">All vitals updated</p>
-        </div>
+      {/* Menu Bar: Progressive Disclosure Tabs */}
+      <div className="flex items-center gap-2 border-b border-slate-200 pb-px">
+        <button
+          onClick={() => setActiveTab('census')}
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
+            activeTab === 'census'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <BedDouble className="w-4 h-4" />
+          <span>Bed Census & Turnover ({wardBeds.length})</span>
+        </button>
 
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
-          <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
-            Beds In Sanitization
-          </div>
-          <div className="text-xl font-bold text-[#D97706]">2 Beds</div>
-          <p className="text-[11px] text-[#64748B] mt-1">Turnover: ~25 mins</p>
-        </div>
+        <button
+          onClick={() => setActiveTab('vitals')}
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
+            activeTab === 'vitals'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <Activity className="w-4 h-4" />
+          <span>Patient Vitals Monitoring</span>
+        </button>
 
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
-          <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
-            Pending Discharge Prep
-          </div>
-          <div className="text-xl font-bold text-[#2563EB]">1 Patient</div>
-          <p className="text-[11px] text-[#64748B] mt-1">Ravi Kumar (BED101)</p>
-        </div>
-
-        <div className="bg-white rounded-xl border border-[#E2E8F0] p-4 shadow-xs">
-          <div className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
-            Nurse-to-Patient Ratio
-          </div>
-          <div className="text-xl font-bold text-[#16A34A]">1 : 4.5</div>
-          <p className="text-[11px] text-[#16A34A] mt-1">NABH compliant</p>
-        </div>
+        <button
+          onClick={() => setActiveTab('tasks')}
+          className={`flex items-center gap-2 px-4 py-2.5 text-xs font-medium border-b-2 transition-colors ${
+            activeTab === 'tasks'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-slate-500 hover:text-slate-800'
+          }`}
+        >
+          <HeartHandshake className="w-4 h-4" />
+          <span>Bedside Care Tasks</span>
+        </button>
       </div>
 
-      {/* Ward Bed Census & Floor Map */}
-      <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs p-5 space-y-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xs font-bold text-[#172B4D] uppercase tracking-wider">
-              Ward Bed Census & Turnover Station
-            </h3>
-            <p className="text-[11px] text-[#64748B]">
-              Real-time occupancy, sanitization status, and patient escort readiness
-            </p>
-          </div>
-        </div>
+      {/* Tab 1: Bed Census */}
+      {activeTab === 'census' && (
+        <div className="space-y-4 animate-in fade-in duration-150">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {wardBeds.slice(0, 9).map((bed) => {
+              const isOcc = bed.status === 'In Use';
+              const isClean = bed.status === 'Cleaning';
+              const isAvail = bed.status === 'Available';
+              const isDispatched = dispatchedBeds.includes(bed.id);
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {wardBeds.slice(0, 6).map((bed) => {
-            const isOcc = bed.status === 'In Use';
-            const isClean = bed.status === 'Cleaning';
-            const isAvail = bed.status === 'Available';
-
-            return (
-              <div
-                key={bed.id}
-                className={`p-3.5 rounded-xl border text-xs transition-all ${
-                  isClean
-                    ? 'border-[#D97706]/40 bg-[#FFF6E5]/40'
-                    : isOcc
-                    ? 'border-[#2563EB]/30 bg-[#F6F9FC]'
-                    : 'border-[#E2E8F0] bg-white'
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="font-bold text-[#172B4D]">{bed.name}</span>
-                  <span
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                      isOcc
-                        ? 'bg-[#EAF2FF] text-[#2563EB]'
-                        : isClean
-                        ? 'bg-[#FFF6E5] text-[#D97706]'
-                        : 'bg-[#E8F8F6] text-[#0F9F9A]'
-                    }`}
-                  >
-                    {bed.status}
-                  </span>
-                </div>
-
-                <div className="text-[11px] text-[#64748B] mb-2">
-                  Location: {bed.location}
-                  {bed.currentPatientId && (
-                    <div className="font-semibold text-[#172B4D] mt-0.5">
-                      Assigned: Patient {bed.currentPatientId}
-                    </div>
-                  )}
-                </div>
-
-                <div className="pt-2 border-t border-[#E2E8F0] flex items-center justify-between">
-                  <span className="text-[10px] text-[#64748B]">
-                    Assigned: {bed.assignedStaff || 'Sister Kavitha'}
-                  </span>
-
-                  {isOcc ? (
-                    <button
-                      onClick={() => handleRequestCleaning(bed.id)}
-                      className="text-[11px] text-[#D97706] hover:underline font-semibold"
-                    >
-                      {cleaningRequested === bed.id ? 'Housekeeping Alerted ✓' : 'Request Cleaning'}
-                    </button>
-                  ) : isAvail ? (
-                    <span className="text-[11px] text-[#16A34A] font-semibold">
-                      Ready for Admit ✓
+              return (
+                <div
+                  key={bed.id}
+                  className="p-4 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-colors text-xs"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold text-slate-900">{bed.name}</span>
+                    <span className={`text-[11px] font-medium ${
+                      isOcc ? 'text-blue-700' : isClean ? 'text-amber-700' : 'text-emerald-700'
+                    }`}>
+                      {isOcc ? 'Occupied' : isClean ? 'Disinfecting' : 'Ready'}
                     </span>
-                  ) : null}
+                  </div>
+
+                  <p className="text-slate-500 text-[11px] mb-3">
+                    {bed.location} · {bed.type}
+                    {bed.currentPatientId && (
+                      <span className="block text-slate-700 font-medium mt-0.5">
+                        Patient ID: {bed.currentPatientId}
+                      </span>
+                    )}
+                  </p>
+
+                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                    <span className="text-slate-400 text-[11px]">Nurse: Sister Kavitha</span>
+
+                    {isOcc && (
+                      <button
+                        onClick={() => handleHousekeepingCall(bed.id)}
+                        disabled={isDispatched}
+                        className={`text-xs font-semibold ${
+                          isDispatched ? 'text-emerald-600' : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        {isDispatched ? 'Dispatched ✓' : 'Dispatch Sanitization'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Tab 2: Patient Vitals */}
+      {activeTab === 'vitals' && (
+        <div className="bg-white rounded-xl border border-slate-200 shadow-xs divide-y divide-slate-100 animate-in fade-in duration-150">
+          {patients.slice(0, 5).map((p) => (
+            <div key={p.id} className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-slate-900">{p.name}</span>
+                  <span className="text-slate-400">·</span>
+                  <span className="text-slate-500">{p.id}</span>
+                  <span className="text-slate-400">·</span>
+                  <span className="text-slate-600 font-medium">{p.roomBed || 'CCU'}</span>
+                </div>
+                <div className="text-slate-500 mt-1">
+                  Physician: {p.doctorName} · {p.department}
                 </div>
               </div>
-            );
-          })}
+
+              <div className="flex items-center gap-6">
+                <div>
+                  <span className="text-slate-400 block text-[11px]">Blood Pressure</span>
+                  <span className="font-medium text-slate-800">{p.vitalSigns?.bp || '120/80'}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[11px]">Pulse</span>
+                  <span className="font-medium text-slate-800">{p.vitalSigns?.pulse || 72} bpm</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[11px]">SpO2</span>
+                  <span className="font-medium text-slate-800">{p.vitalSigns?.spo2 || 99}%</span>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-      </div>
+      )}
+
+      {/* Tab 3: Bedside Tasks */}
+      {activeTab === 'tasks' && (
+        <div className="bg-white rounded-xl border border-slate-200 p-5 shadow-xs space-y-3 animate-in fade-in duration-150 text-xs">
+          <h3 className="text-xs font-semibold text-slate-900 tracking-wide mb-2">
+            Nursing Checklist & Shift Handover
+          </h3>
+
+          <div className="p-3.5 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-between">
+            <div>
+              <span className="font-semibold text-slate-900">Bed 101 (Ravi Kumar) Pre-Discharge Checklist</span>
+              <p className="text-slate-500 mt-0.5">Cannula removal, verify take-home medications received</p>
+            </div>
+            <span className="text-blue-700 font-medium">Pending TPA Clearance</span>
+          </div>
+
+          <div className="p-3.5 rounded-lg border border-slate-200 bg-slate-50 flex items-center justify-between">
+            <div>
+              <span className="font-semibold text-slate-900">Bed 105 (K. Venkatesh) Midday Vitals</span>
+              <p className="text-slate-500 mt-0.5">Record temperature and blood glucose check at 12:00</p>
+            </div>
+            <span className="text-emerald-700 font-medium">Completed ✓</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
