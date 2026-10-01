@@ -16,6 +16,7 @@ import {
   LogOut,
   ArrowRight,
   Sparkles,
+  User,
 } from 'lucide-react';
 
 interface LoginModalProps {
@@ -96,6 +97,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({ isOpen, onClose }) => {
         return <HeartHandshake className="w-4 h-4 text-[#16A34A]" />;
       case 'billing':
         return <Receipt className="w-4 h-4 text-[#D97706]" />;
+      case 'patient':
+        return <User className="w-4 h-4 text-[#0284C7]" />;
     }
   };
 

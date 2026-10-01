@@ -90,6 +90,23 @@ export const PRESET_USERS: UserProfile[] = [
       'approve_discharge_pass',
     ],
   },
+  {
+    id: 'USR-PAT-01',
+    name: 'Ravi Kumar',
+    email: 'ravi.kumar@patient.careone.health',
+    role: 'patient',
+    title: 'Admitted Inpatient (ID: P1001)',
+    department: 'Cardiology (Bed BED101)',
+    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    initials: 'RK',
+    permissions: [
+      'view_my_journey',
+      'view_my_reports',
+      'view_my_prescriptions',
+      'view_my_billing',
+      'request_nurse_assistance',
+    ],
+  },
 ];
 
 export const ROLE_DEFINITIONS: Record<
@@ -159,5 +176,13 @@ export const ROLE_DEFINITIONS: Record<
     bg: 'bg-[#FFF6E5]',
     border: 'border-[#D97706]/30',
     primaryAccessiblePages: ['bottlenecks', 'patients', 'audit', 'command_center'],
+  },
+  patient: {
+    label: 'Patient Care Portal',
+    description: 'Transparent personal care trajectory, live doctor/nurse contacts, reports, prescriptions, and discharge status.',
+    color: 'text-[#0284C7]',
+    bg: 'bg-sky-50',
+    border: 'border-sky-200',
+    primaryAccessiblePages: ['command_center', 'patients'],
   },
 };

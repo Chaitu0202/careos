@@ -1,7 +1,7 @@
-// CareOS Hospital Operating System — Top Header with Role-Based Authentication
-import React, { useState } from 'react';
+// CareOS Hospital Operating System — Top Header with Unobtrusive Profile Menu
+import React, { useState, useRef, useEffect } from 'react';
 import { useHospital } from '../../state/hospitalStore';
-import { ROLE_DEFINITIONS } from '../../data/userRoles';
+import { PRESET_USERS, ROLE_DEFINITIONS } from '../../data/userRoles';
 import {
   Activity,
   Mic,
@@ -16,6 +16,12 @@ import {
   ShieldCheck,
   ChevronDown,
   Lock,
+  LogOut,
+  Building2,
+  Stethoscope,
+  HeartHandshake,
+  Receipt,
+  Check,
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -33,12 +39,27 @@ export const Header: React.FC<HeaderProps> = ({ onOpenVoice }) => {
     isSpeaking,
     stopSpeaking,
     currentUser,
+    setCurrentUser,
+    logoutUser,
     setIsLoginModalOpen,
   } = useHospital();
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
 
   const unresolvedAlerts = alerts.filter((a) => !a.resolved);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setIsProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,10 +71,29 @@ export const Header: React.FC<HeaderProps> = ({ onOpenVoice }) => {
 
   const roleMeta = currentUser ? ROLE_DEFINITIONS[currentUser.role] : null;
 
+  const getRoleIcon = (role: string) => {
+    switch (role) {
+      case 'admin':
+        return <ShieldCheck className="w-3.5 h-3.5 text-[#2563EB]" />;
+      case 'operations':
+        return <Building2 className="w-3.5 h-3.5 text-[#0F9F9A]" />;
+      case 'doctor':
+        return <Stethoscope className="w-3.5 h-3.5 text-[#7C3AED]" />;
+      case 'nurse':
+        return <HeartHandshake className="w-3.5 h-3.5 text-[#16A34A]" />;
+      case 'billing':
+        return <Receipt className="w-3.5 h-3.5 text-[#D97706]" />;
+      case 'patient':
+        return <User className="w-3.5 h-3.5 text-[#0284C7]" />;
+      default:
+        return <ShieldCheck className="w-3.5 h-3.5 text-[#2563EB]" />;
+    }
+  };
+
   return (
     <header className="sticky top-0 z-30 bg-white border-b border-[#E2E8F0] shadow-[0_1px_3px_rgba(15,23,42,0.03)] px-4 lg:px-6 py-2.5">
       <div className="flex items-center justify-between gap-4">
-        {/* Left: Branding & Subtitle */}
+        {/* Left: Branding */}
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-8 h-8 rounded-lg bg-[#2563EB] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
             <Activity className="w-4 h-4" />
@@ -61,20 +101,20 @@ export const Header: React.FC<HeaderProps> = ({ onOpenVoice }) => {
           <div className="truncate">
             <div className="flex items-center gap-2">
               <h1 className="text-sm font-bold text-[#172B4D] tracking-tight">
-                Hospital Command Center
+                CareOS
               </h1>
               <span className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#E8F8F6] text-[#0F9F9A] border border-[#0F9F9A]/20">
-                Synthetic Demo
+                CareOne Hospital
               </span>
             </div>
             <p className="text-[11px] text-[#64748B] truncate">
-              CareOne Multispecialty • Visakhapatnam
+              Hospital Intelligence Operating System • Visakhapatnam
             </p>
           </div>
         </div>
 
-        {/* Center: Search / Prompt input */}
-        <div className="flex-1 max-w-lg hidden md:block">
+        {/* Center: Search input */}
+        <div className="flex-1 max-w-md hidden md:block">
           <form onSubmit={handleSearchSubmit} className="relative">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-[#64748B]" />
             <input
@@ -96,7 +136,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenVoice }) => {
 
         {/* Right Controls */}
         <div className="flex items-center gap-2 lg:gap-2.5 shrink-0">
-          {/* TTS Speaker status */}
+          {/* TTS Speaking badge */}
           {isSpeaking && (
             <button
               onClick={stopSpeaking}
@@ -161,25 +201,24 @@ export const Header: React.FC<HeaderProps> = ({ onOpenVoice }) => {
             <span className="text-[11px]">18 Agents Active</span>
           </button>
 
-          {/* Role-Based Login & Profile Button */}
-          <div className="pl-1 sm:pl-2 border-l border-[#E2E8F0]">
+          {/* Clean Top-Right Profile & Role Switcher Dropdown */}
+          <div className="relative pl-1 sm:pl-2 border-l border-[#E2E8F0]" ref={profileMenuRef}>
             {currentUser ? (
               <button
-                onClick={() => setIsLoginModalOpen(true)}
-                className="flex items-center gap-2 px-2.5 py-1 rounded-lg border border-[#E2E8F0] hover:border-[#2563EB]/40 bg-white hover:bg-[#F6F9FC] transition-all text-left group shadow-2xs"
-                title="Click to Switch Active Role or Sign Out"
+                onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                className="flex items-center gap-2 px-2.5 py-1 rounded-lg border border-[#E2E8F0] hover:border-[#2563EB]/40 bg-white hover:bg-[#F6F9FC] transition-all text-left shadow-2xs group"
+                title="Click to Switch Role or View Profile"
               >
                 <div className="w-7 h-7 rounded-full bg-[#2563EB] text-white text-xs font-bold flex items-center justify-center shrink-0">
                   {currentUser.initials}
                 </div>
-                <div className="hidden sm:block">
+                <div className="hidden sm:block text-left">
                   <div className="text-xs font-semibold text-[#172B4D] flex items-center gap-1 leading-tight group-hover:text-[#2563EB]">
                     <span>{currentUser.name.split(' ')[0]}</span>
-                    <ChevronDown className="w-3 h-3 text-[#64748B]" />
+                    <ChevronDown className={`w-3 h-3 text-[#64748B] transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
                   </div>
                   <div className="text-[10px] font-medium text-[#64748B] flex items-center gap-1">
-                    <span className={`w-1.5 h-1.5 rounded-full ${roleMeta?.bg ? 'bg-[#2563EB]' : 'bg-gray-400'}`} />
-                    <span className="truncate max-w-[90px]">{roleMeta?.label.split(' ')[0] || currentUser.role}</span>
+                    <span className="truncate max-w-[80px]">{roleMeta?.label.split(' ')[0] || currentUser.role}</span>
                   </div>
                 </div>
               </button>
@@ -189,8 +228,94 @@ export const Header: React.FC<HeaderProps> = ({ onOpenVoice }) => {
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#172B4D] hover:bg-[#2563EB] text-white text-xs font-semibold shadow-xs transition-colors"
               >
                 <Lock className="w-3 h-3" />
-                <span>Staff Sign In</span>
+                <span>Sign In</span>
               </button>
+            )}
+
+            {/* Profile Dropdown Popover */}
+            {isProfileMenuOpen && currentUser && (
+              <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl border border-[#E2E8F0] shadow-xl z-50 p-2 animate-in fade-in zoom-in-95 duration-100">
+                {/* User Summary Header */}
+                <div className="p-2.5 border-b border-[#E2E8F0] bg-[#F6F9FC] rounded-lg mb-2">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-full bg-[#2563EB] text-white font-bold flex items-center justify-center text-xs shrink-0 shadow-xs">
+                      {currentUser.initials}
+                    </div>
+                    <div className="truncate">
+                      <div className="font-bold text-[#172B4D] text-xs truncate">{currentUser.name}</div>
+                      <div className="text-[10px] text-[#64748B] truncate">{currentUser.email}</div>
+                      <div className="mt-0.5">
+                        <span className={`inline-block px-1.5 py-0.2 rounded text-[9px] font-bold border uppercase ${roleMeta?.bg} ${roleMeta?.color} ${roleMeta?.border}`}>
+                          {roleMeta?.label}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Role Switcher Section */}
+                <div className="px-1 py-1">
+                  <div className="text-[10px] font-bold uppercase tracking-wider text-[#64748B] px-2 mb-1">
+                    Switch Role Persona
+                  </div>
+                  <div className="space-y-0.5">
+                    {PRESET_USERS.map((user) => {
+                      const isSelected = currentUser.id === user.id;
+                      return (
+                        <button
+                          key={user.id}
+                          onClick={() => {
+                            setCurrentUser(user);
+                            setIsProfileMenuOpen(false);
+                            setActivePage('command_center');
+                          }}
+                          className={`w-full px-2.5 py-1.5 rounded-lg text-xs font-medium text-left flex items-center justify-between transition-colors ${
+                            isSelected
+                              ? 'bg-[#EAF2FF] text-[#2563EB] font-bold'
+                              : 'text-[#172B4D] hover:bg-[#F6F9FC]'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 truncate">
+                            {getRoleIcon(user.role)}
+                            <div className="truncate">
+                              <span className="truncate">{user.name}</span>
+                              <span className="text-[10px] text-[#64748B] block -mt-0.5">
+                                {ROLE_DEFINITIONS[user.role]?.label.split(' ')[0]}
+                              </span>
+                            </div>
+                          </div>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-[#2563EB] shrink-0" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Actions Footer */}
+                <div className="pt-2 mt-1 border-t border-[#E2E8F0] space-y-1">
+                  <button
+                    onClick={() => {
+                      setIsProfileMenuOpen(false);
+                      setIsLoginModalOpen(true);
+                    }}
+                    className="w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#2563EB] hover:bg-[#EAF2FF] text-left transition-colors flex items-center gap-2"
+                  >
+                    <Lock className="w-3.5 h-3.5" />
+                    <span>Custom Email Login / Roles</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      logoutUser();
+                      setIsProfileMenuOpen(false);
+                    }}
+                    className="w-full px-2.5 py-1.5 rounded-lg text-xs font-semibold text-[#DC2626] hover:bg-[#FEECEC] text-left transition-colors flex items-center gap-2"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
             )}
           </div>
         </div>
